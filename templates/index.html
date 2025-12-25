@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>DATAHUB</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<header class="header">
+    <div class="logo">DATAHUB</div>
+
+    <div class="actions">
+        <label class="file-btn">
+            Выбрать файлы
+            <input type="file" id="fileInput" multiple hidden>
+        </label>
+        <button onclick="upload()">Загрузить</button>
+        <button onclick="createFolder()">Новая папка</button>
+    </div>
+</header>
+
+<div class="container">
+    <div class="progress">
+        <div id="progress-bar"></div>
+    </div>
+
+    <ul id="fileList"></ul>
+</div>
+
+<script src="/static/script.js"></script>
+</body>
+</html>
