@@ -70,15 +70,26 @@ def list_files():
     path = request.args.get("path", "")
     folder = safe_path(path)
 
-    items = []
-    for name in sorted(os.listdir(folder)):
+    dirs = []
+    files = []
+
+    for name in os.listdir(folder):
         full = os.path.join(folder, name)
-        items.append({
+        item = {
             "name": name,
             "is_dir": os.path.isdir(full),
             "path": os.path.join(path, name)
-        })
-    return jsonify(items)
+        }
+
+        if item["is_dir"]:
+            dirs.append(item)
+        else:
+            files.append(item)
+
+    dirs.sort(key=lambda x: x["name"].lower())
+    files.sort(key=lambda x: x["name"].lower())
+
+    return jsonify(dirs + files)
 
 
 @app.route("/api/upload", methods=["POST"])
