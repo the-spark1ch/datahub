@@ -5,4 +5,4 @@ There is no support for creating accounts, the server uses one account whose dat
 
 The web server runs on an internal IP, which means you can connect from any device in your home network.
 
-*Attention! Use Flask only in development, never use for commercial purposes.*
+> **Attention!** Use Flask only in development, never use for commercial purposes.
