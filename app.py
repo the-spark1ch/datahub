@@ -1,21 +1,28 @@
 import os
 import shutil
 from functools import wraps
+
 from flask import (
-    Flask, render_template, request,
-    jsonify, send_from_directory,
-    redirect, url_for, session
+    Flask,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_from_directory,
+    session,
+    url_for,
 )
+from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
-from werkzeug.security import generate_password_hash, check_password_hash
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 STORAGE = os.path.join(BASE_DIR, "storage")
 os.makedirs(STORAGE, exist_ok=True)
 
 app = Flask(__name__)
-app.secret_key = "datahub-secret-key"  
+app.secret_key = "datahub-secret-key"
 app.config["MAX_CONTENT_LENGTH"] = None
+
 
 USERNAME = "user"
 PASSWORD_HASH = generate_password_hash("1234")
@@ -34,6 +41,7 @@ def login_required(func):
         if not session.get("auth"):
             return redirect(url_for("login"))
         return func(*args, **kwargs)
+
     return wrapper
 
 
@@ -78,7 +86,7 @@ def list_files():
         item = {
             "name": name,
             "is_dir": os.path.isdir(full),
-            "path": os.path.join(path, name)
+            "path": os.path.join(path, name),
         }
 
         if item["is_dir"]:
@@ -111,9 +119,7 @@ def download():
     path = request.args.get("path")
     full = safe_path(path)
     return send_from_directory(
-        os.path.dirname(full),
-        os.path.basename(full),
-        as_attachment=True
+        os.path.dirname(full), os.path.basename(full), as_attachment=True
     )
 
 

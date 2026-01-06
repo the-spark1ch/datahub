@@ -129,3 +129,17 @@ li {
     margin-top: 12px;
     color: #ff5a5a;
 }
+.breadcrumbs {
+    padding: 10px 20px;
+    background: #111;
+    color: #aaa;
+    font-size: 14px;
+}
+
+.breadcrumbs span {
+    cursor: pointer;
+}
+
+.breadcrumbs span:hover {
+    color: orange;
+}
