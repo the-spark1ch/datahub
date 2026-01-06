@@ -108,7 +108,6 @@ function renderBreadcrumbs(path) {
 
     const parts = path ? path.split("/") : [];
 
-    // корень
     const root = document.createElement("span");
     root.textContent = "DATAHUB";
     root.onclick = () => {
