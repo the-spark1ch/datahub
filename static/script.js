@@ -1,5 +1,11 @@
 let currentPath = "";
 
+// Инициализация при загрузке
+document.addEventListener("DOMContentLoaded", () => {
+  load();
+  setupDragAndDrop(); // <--- Подключаем Drag & Drop
+});
+
 function load() {
   renderBreadcrumbs(currentPath);
   fetch(`/api/list?path=${currentPath}`)
@@ -15,20 +21,16 @@ function load() {
           currentPath = currentPath.split("/").slice(0, -1).join("/");
           load();
         };
-
         list.appendChild(back);
       }
 
       items.forEach((item) => {
         const li = document.createElement("li");
-
         if (item.is_dir) {
           li.innerHTML = `
                         <span>📁 ${item.name}</span>
                         <div class="file-actions">
-                            <button class="delete" onclick="del(event, '${item.path}')">
-                                Удалить
-                            </button>
+                            <button class="delete" onclick="del(event, '${item.path}')">Удалить</button>
                         </div>
                     `;
           li.onclick = () => {
@@ -39,27 +41,67 @@ function load() {
           li.innerHTML = `
                         <span>📄 ${item.name}</span>
                         <div class="file-actions">
-                            <button onclick="download('${item.path}')">
-                                Скачать
-                            </button>
-                            <button class="delete" onclick="del(event, '${item.path}')">
-                                Удалить
-                            </button>
+                            <button onclick="download('${item.path}')">Скачать</button>
+                            <button class="delete" onclick="del(event, '${item.path}')">Удалить</button>
                         </div>
                     `;
         }
-
         list.appendChild(li);
       });
     });
 }
 
+// --- Логика Drag & Drop ---
+function setupDragAndDrop() {
+  const dropZone = document.querySelector(".container");
+
+  // Отменяем стандартное поведение браузера (открытие файла)
+  ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+  });
+
+  function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  // Визуальная подсветка
+  ["dragenter", "dragover"].forEach((eventName) => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.add("drag-over"), false);
+  });
+
+  ["dragleave", "drop"].forEach((eventName) => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.remove("drag-over"), false);
+  });
+
+  // Обработка сброса файлов
+  dropZone.addEventListener("drop", (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      upload(files); // Передаем сброшенные файлы в upload
+    }
+  });
+}
+// --------------------------
+
 function download(path) {
   window.location = `/api/download?path=${path}`;
 }
 
-function upload() {
-  const files = document.getElementById("fileInput").files;
+// Модифицированная функция upload принимает аргумент (filesFromDrop)
+function upload(filesFromDrop = null) {
+  // Если переданы файлы через Drop, берем их. Иначе берем из input
+  // Важно: filesFromDrop может быть событием click, если вызвана кнопкой, поэтому проверяем тип
+  let files;
+  
+  if (filesFromDrop && filesFromDrop instanceof FileList) {
+      files = filesFromDrop;
+  } else {
+      files = document.getElementById("fileInput").files;
+  }
+
+  if (!files || files.length === 0) return;
+
   const data = new FormData();
   for (let f of files) data.append("files", f);
 
@@ -76,6 +118,8 @@ function upload() {
   xhr.onload = () => {
     document.getElementById("progress-bar").style.width = "0%";
     load();
+    // Очищаем input, чтобы можно было загрузить тот же файл повторно через кнопку
+    document.getElementById("fileInput").value = ""; 
   };
 
   xhr.send(data);
@@ -102,6 +146,7 @@ function del(e, path) {
     body: JSON.stringify({ path }),
   }).then(load);
 }
+
 function renderBreadcrumbs(path) {
     const container = document.getElementById("breadcrumbs");
     container.innerHTML = "";
@@ -120,21 +165,17 @@ function renderBreadcrumbs(path) {
 
     parts.forEach(part => {
         accumulated += (accumulated ? "/" : "") + part;
-
         const sep = document.createElement("span");
         sep.textContent = " / ";
         container.appendChild(sep);
 
-        // 🔑 КЛЮЧЕВОЙ МОМЕНТ
         const pathForCrumb = accumulated;
-
         const crumb = document.createElement("span");
         crumb.textContent = part;
         crumb.onclick = () => {
             currentPath = pathForCrumb;
             load();
         };
-
         container.appendChild(crumb);
     });
 }

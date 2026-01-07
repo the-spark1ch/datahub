@@ -143,3 +143,17 @@ li {
 .breadcrumbs span:hover {
     color: orange;
 }
+.container.drag-over {
+    border: 2px dashed orange;
+    background: #1a1a1a;
+    border-radius: 8px;
+}
+
+.container * {
+    pointer-events: none;
+}
+.container .file-actions button, 
+.container li, 
+.container span {
+    pointer-events: auto;
+}
