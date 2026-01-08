@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>DATAHUB — Вход</title>
+    <title>DATAHUB — Регистрация</title>
     <link rel="stylesheet" href="/static/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&display=swap" rel="stylesheet">
 </head>
@@ -14,11 +14,12 @@
     <form method="post">
         <input name="login" placeholder="Логин" required>
         <input name="password" type="password" placeholder="Пароль" required>
-        <button type="submit">Войти</button>
+        <input name="password2" type="password" placeholder="Повторите пароль" required>
+        <button type="submit">Зарегистрироваться</button>
     </form>
 
     <div class="login-links">
-        <a class="muted-link" href="/register">Регистрация</a>
+        <a class="muted-link" href="/login">Уже есть аккаунт? Войти</a>
     </div>
 
     {% if error %}

@@ -157,3 +157,18 @@ li {
 .container span {
     pointer-events: auto;
 }
+
+.login-links {
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+.muted-link {
+    color: #aaa;
+    text-decoration: none;
+}
+
+.muted-link:hover {
+    color: orange;
+    text-decoration: underline;
+}
