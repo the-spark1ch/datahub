@@ -107,7 +107,20 @@ function upload(filesFromDrop = null) {
 
   xhr.onload = () => {
     document.getElementById("progress-bar").style.width = "0%";
-    load();
+    if (xhr.status === 409) {
+      let message = "Файл уже существует. Переименуйте файл и попробуйте снова.";
+      try {
+        const data = JSON.parse(xhr.responseText);
+        if (data && data.message) {
+          message = data.message;
+        }
+      } catch (error) {
+        // ignore invalid JSON
+      }
+      alert(message);
+    } else {
+      load();
+    }
     document.getElementById("fileInput").value = ""; 
   };
 

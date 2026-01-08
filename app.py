@@ -341,6 +341,8 @@ def upload():
         if not filename:
             continue
         dest = os.path.join(folder, filename)
+        if os.path.exists(dest):
+            return jsonify(error="conflict", message=f"Файл уже существует: {filename}"), 409
         f.save(dest)
         saved += 1
 
