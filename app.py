@@ -395,7 +395,6 @@ def delete():
     data = request.get_json(force=True, silent=True) or {}
     rel = (data.get("path") or "").strip()
 
-    # запрещаем удалять корень storage
     if rel in ("", "/", ".", "./"):
         return jsonify(error="cannot_delete_root"), 400
 
