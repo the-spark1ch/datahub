@@ -1,9 +1,7 @@
 let currentPath = "";
-
-// Инициализация при загрузке
 document.addEventListener("DOMContentLoaded", () => {
   load();
-  setupDragAndDrop(); // <--- Подключаем Drag & Drop
+  setupDragAndDrop();
 });
 
 function load() {
@@ -51,11 +49,9 @@ function load() {
     });
 }
 
-// --- Логика Drag & Drop ---
 function setupDragAndDrop() {
   const dropZone = document.querySelector(".container");
 
-  // Отменяем стандартное поведение браузера (открытие файла)
   ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
     dropZone.addEventListener(eventName, preventDefaults, false);
   });
@@ -65,7 +61,6 @@ function setupDragAndDrop() {
     e.stopPropagation();
   }
 
-  // Визуальная подсветка
   ["dragenter", "dragover"].forEach((eventName) => {
     dropZone.addEventListener(eventName, () => dropZone.classList.add("drag-over"), false);
   });
@@ -74,24 +69,19 @@ function setupDragAndDrop() {
     dropZone.addEventListener(eventName, () => dropZone.classList.remove("drag-over"), false);
   });
 
-  // Обработка сброса файлов
   dropZone.addEventListener("drop", (e) => {
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      upload(files); // Передаем сброшенные файлы в upload
+      upload(files); 
     }
   });
 }
-// --------------------------
 
 function download(path) {
   window.location = `/api/download?path=${path}`;
 }
 
-// Модифицированная функция upload принимает аргумент (filesFromDrop)
 function upload(filesFromDrop = null) {
-  // Если переданы файлы через Drop, берем их. Иначе берем из input
-  // Важно: filesFromDrop может быть событием click, если вызвана кнопкой, поэтому проверяем тип
   let files;
   
   if (filesFromDrop && filesFromDrop instanceof FileList) {
@@ -118,7 +108,6 @@ function upload(filesFromDrop = null) {
   xhr.onload = () => {
     document.getElementById("progress-bar").style.width = "0%";
     load();
-    // Очищаем input, чтобы можно было загрузить тот же файл повторно через кнопку
     document.getElementById("fileInput").value = ""; 
   };
 
