@@ -17,19 +17,13 @@ from flask import (
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
-# ---------------------------
-# App / storage configuration
-# ---------------------------
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 STORAGE = os.path.join(BASE_DIR, "storage")
 os.makedirs(STORAGE, exist_ok=True)
 
 app = Flask(__name__, instance_relative_config=True)
-# IMPORTANT: в реальном деплое задавайте SECRET_KEY через переменную окружения
 app.secret_key = os.environ.get("DATAHUB_SECRET_KEY", "change-me-in-production")
 
-# Максимальный размер загрузки (по умолчанию без лимита).
-# Задайте DATAHUB_MAX_CONTENT_LENGTH (в байтах), например 1073741824 для 1 ГБ.
 _max_len = os.environ.get("DATAHUB_MAX_CONTENT_LENGTH")
 if _max_len:
     try:
@@ -37,19 +31,10 @@ if _max_len:
     except ValueError:
         pass
 
-# ---------------------------
-# Auth / lockout configuration
-# ---------------------------
-# Кол-во неудачных попыток до блокировки
 MAX_FAILED_ATTEMPTS = int(os.environ.get("DATAHUB_MAX_FAILED_ATTEMPTS", "5"))
-# Окно, в котором считаем попытки (минут)
 FAILED_WINDOW_MIN = int(os.environ.get("DATAHUB_FAILED_WINDOW_MIN", "15"))
-# Длительность блокировки (минут)
 LOCKOUT_MIN = int(os.environ.get("DATAHUB_LOCKOUT_MIN", "15"))
 
-# ---------------------------
-# DB helpers (SQLite in instance/)
-# ---------------------------
 def db_path() -> str:
     os.makedirs(app.instance_path, exist_ok=True)
     return os.path.join(app.instance_path, "datahub.db")
@@ -107,7 +92,6 @@ def register_user(username: str, password: str) -> None:
     if not username or not password:
         raise ValueError("Логин и пароль обязательны")
 
-    # Минимальная валидация, чтобы не ломать UX
     if len(username) < 3:
         raise ValueError("Логин слишком короткий (минимум 3 символа)")
     if len(password) < 6:
@@ -198,9 +182,6 @@ def failed_count_in_window(username: str, ip: str) -> int:
     return int(row["cnt"]) if row else 0
 
 
-# ---------------------------
-# Auth decorators
-# ---------------------------
 def login_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
@@ -211,9 +192,6 @@ def login_required(fn):
     return wrapper
 
 
-# ---------------------------
-# Safe path helpers
-# ---------------------------
 def safe_path(rel_path: str) -> str:
     """
     Преобразует относительный путь (внутри STORAGE) в абсолютный.
@@ -239,18 +217,12 @@ def list_dir(rel_path: str):
     for name in os.listdir(folder):
         full = os.path.join(folder, name)
         is_dir = os.path.isdir(full)
-        # формируем относительный путь в стиле "a/b"
         item_rel = os.path.relpath(full, STORAGE).replace("\\", "/")
         items.append({"name": name, "path": item_rel, "is_dir": is_dir})
-
-    # сортировка: папки сверху, затем файлы; по имени
     items.sort(key=lambda x: (not x["is_dir"], x["name"].lower()))
     return items
 
 
-# ---------------------------
-# Routes: UI
-# ---------------------------
 @app.route("/")
 @login_required
 def index():
@@ -267,7 +239,6 @@ def login():
         ip = request.headers.get("X-Forwarded-For", request.remote_addr or "")
         ip = ip.split(",")[0].strip()
 
-        # Проверяем блокировку
         locked_until = get_lock_until(username, ip)
         if locked_until and locked_until > datetime.utcnow():
             remaining = int((locked_until - datetime.utcnow()).total_seconds() // 60) + 1
@@ -286,11 +257,9 @@ def login():
         if ok:
             session["auth"] = True
             session["user"] = username
-            # успешный вход — снимаем блокировку, если была
             clear_lock(username, ip)
             return redirect(url_for("index"))
 
-        # Неудача: считаем попытки и при необходимости блокируем
         fails = failed_count_in_window(username, ip)
         if fails >= MAX_FAILED_ATTEMPTS:
             until_dt = datetime.utcnow() + timedelta(minutes=LOCKOUT_MIN)
@@ -325,7 +294,6 @@ def register():
         except ValueError as e:
             return render_template("register.html", error=str(e))
 
-        # после регистрации — сразу логиним
         session["auth"] = True
         session["user"] = username
         return redirect(url_for("index"))
@@ -339,9 +307,6 @@ def logout():
     return redirect(url_for("login"))
 
 
-# ---------------------------
-# Routes: API
-# ---------------------------
 @app.route("/api/list")
 @login_required
 def api_list():
@@ -431,7 +396,6 @@ def delete():
     data = request.get_json(force=True, silent=True) or {}
     rel = (data.get("path") or "").strip()
 
-    # запрещаем удалять корень storage
     if rel in ("", "/", ".", "./"):
         return jsonify(error="cannot_delete_root"), 400
 
@@ -451,9 +415,6 @@ def delete():
     return jsonify(ok=True)
 
 
-# ---------------------------
-# Routes: extra (rename/search)
-# ---------------------------
 
 @app.route("/api/rename", methods=["POST"])
 @login_required
@@ -462,11 +423,9 @@ def api_rename():
     rel = (data.get("path") or "").strip()
     new_name = (data.get("name") or "").strip()
 
-    # нельзя переименовывать пустой путь/корень
     if not rel or rel in ("/", ".", "./"):
         return jsonify(error="bad_path"), 400
 
-    # базовая валидация имени (без слэшей и выходов наверх)
     if not new_name or new_name in (".", ".."):
         return jsonify(error="bad_name"), 400
     if any(sep in new_name for sep in ("/", "\\")) or ".." in new_name:
@@ -512,7 +471,6 @@ def api_search():
     storage_abs = os.path.abspath(STORAGE)
 
     for root, dirs, files in os.walk(storage_abs):
-        # папки
         for d in dirs:
             if len(results) >= limit:
                 break
@@ -523,7 +481,6 @@ def api_search():
         if len(results) >= limit:
             break
 
-        # файлы
         for f in files:
             if len(results) >= limit:
                 break
@@ -539,5 +496,4 @@ def api_search():
 
 
 if __name__ == "__main__":
-    # В проде лучше запускать через gunicorn/uwsgi и debug выключить
     app.run(host="0.0.0.0", port=5000, debug=False)
