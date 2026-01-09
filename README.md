@@ -1,7 +1,7 @@
 # DataHub
 File web server in Python, built on Flask to work with files and share them on a single network.
 
-There is no support for creating accounts, the server uses one account whose data you specify through the ```USERNAME``` and ```PASSWORD_HASH``` variables. Hash password.
+There is support for creating and logging into an account to get access to server storage. Data for the code is stored in ```datahub.db``` file
 
 The web server runs on an internal IP, which means you can connect from any device in your home network.
 
