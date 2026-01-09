@@ -2,7 +2,6 @@ let currentPath = "";
 let searchQuery = "";
 let searchTimer = null;
 
-// Инициализация при загрузке
 document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("searchInput");
   if (searchInput) {
@@ -14,7 +13,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 250);
     });
 
-    // Esc — быстро очистить поиск
     searchInput.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         searchInput.value = "";
@@ -25,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   load();
-  setupDragAndDrop(); // <--- Подключаем Drag & Drop
+  setupDragAndDrop();
 });
 
 function load() {
@@ -61,7 +59,6 @@ function renderItems(items, { mode }) {
     nameSpan.className = "item-name";
     nameSpan.textContent = `${item.is_dir ? "📁" : "📄"} ${item.name}`;
 
-    // В режиме поиска показываем путь (чтобы было понятно где найдено)
     if (mode === "search") {
       const sub = document.createElement("span");
       sub.className = "subpath";
@@ -69,7 +66,6 @@ function renderItems(items, { mode }) {
       nameSpan.appendChild(sub);
     }
 
-    // Double-click rename (только по названию)
     nameSpan.ondblclick = (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -90,9 +86,7 @@ function renderItems(items, { mode }) {
       li.appendChild(actions);
 
       li.onclick = () => {
-        // В поиске переход в найденную папку тоже должен работать
         currentPath = item.path;
-        // сбрасываем поиск при навигации
         const si = document.getElementById("searchInput");
         if (si) si.value = "";
         searchQuery = "";
@@ -149,17 +143,14 @@ function renameItem(path, oldName) {
         else alert("Не удалось переименовать.");
         return;
       }
-      // обновляем текущий экран
       load();
     })
     .catch(() => alert("Не удалось переименовать."));
 }
 
-// --- Логика Drag & Drop ---
 function setupDragAndDrop() {
   const dropZone = document.querySelector(".container");
 
-  // Отменяем стандартное поведение браузера (открытие файла)
   ["dragenter", "dragover", "dragleave", "drop"].forEach((eventName) => {
     dropZone.addEventListener(eventName, preventDefaults, false);
   });
@@ -169,7 +160,6 @@ function setupDragAndDrop() {
     e.stopPropagation();
   }
 
-  // Визуальная подсветка
   ["dragenter", "dragover"].forEach((eventName) => {
     dropZone.addEventListener(eventName, () => dropZone.classList.add("drag-over"), false);
   });
@@ -178,24 +168,19 @@ function setupDragAndDrop() {
     dropZone.addEventListener(eventName, () => dropZone.classList.remove("drag-over"), false);
   });
 
-  // Обработка сброса файлов
   dropZone.addEventListener("drop", (e) => {
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      upload(files); // Передаем сброшенные файлы в upload
+      upload(files);
     }
   });
 }
-// --------------------------
 
 function download(path) {
   window.location = `/api/download?path=${encodeURIComponent(path)}`;
 }
 
-// Модифицированная функция upload принимает аргумент (filesFromDrop)
 function upload(filesFromDrop = null) {
-  // Если переданы файлы через Drop, берем их. Иначе берем из input
-  // Важно: filesFromDrop может быть событием click, если вызвана кнопкой, поэтому проверяем тип
   let files;
 
   if (filesFromDrop && filesFromDrop instanceof FileList) {
@@ -223,11 +208,9 @@ function upload(filesFromDrop = null) {
   xhr.upload.onprogress = (e) => {
     if (!e.lengthComputable) return;
 
-    // progress bar
     const pct = (e.loaded / e.total) * 100;
     document.getElementById("progress-bar").style.width = pct + "%";
 
-    // speed
     const now = performance.now();
     if (!lastT) {
       lastT = now;
@@ -236,7 +219,7 @@ function upload(filesFromDrop = null) {
       return;
     }
 
-    const dt = (now - lastT) / 1000; // seconds
+    const dt = (now - lastT) / 1000;
     const db = e.loaded - lastLoaded;
     if (dt > 0.15) {
       const speed = db / dt; // bytes/s
@@ -250,7 +233,6 @@ function upload(filesFromDrop = null) {
     document.getElementById("progress-bar").style.width = "0%";
     setStats("");
     load();
-    // Очищаем input, чтобы можно было загрузить тот же файл повторно через кнопку
     document.getElementById("fileInput").value = "";
   };
 
