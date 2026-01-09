@@ -12,6 +12,8 @@
     <div class="logo">DATAHUB</div>
 
     <div class="actions">
+        <input id="searchInput" class="search-input" placeholder="Поиск по всем файлам..." autocomplete="off">
+
         <label class="file-btn">
             Выбрать файлы
             <input type="file" id="fileInput" multiple hidden>
@@ -20,11 +22,14 @@
         <button onclick="createFolder()">Новая папка</button>
     </div>
 </header>
+
 <div id="breadcrumbs" class="breadcrumbs"></div>
+
 <div class="container">
     <div class="progress">
         <div id="progress-bar"></div>
     </div>
+    <div id="upload-stats" class="upload-stats"></div>
 
     <ul id="fileList"></ul>
 </div>

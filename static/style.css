@@ -172,3 +172,31 @@ li {
     color: orange;
     text-decoration: underline;
 }
+
+/* --- DataHub additions: search + upload stats --- */
+.search-input{
+    width: 220px;
+    padding: 9px 12px;
+    border-radius: 6px;
+    border: none;
+    background: #1a1a1a;
+    color: #fff;
+    outline: none;
+}
+
+.search-input::placeholder{
+    color: #777;
+}
+
+.upload-stats{
+    margin: 8px 0 14px;
+    font-size: 13px;
+    color: #aaa;
+    min-height: 16px; /* чтобы не прыгала вёрстка */
+}
+
+.subpath{
+    margin-left: 8px;
+    font-size: 12px;
+    color: #777;
+}
