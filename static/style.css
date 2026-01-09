@@ -173,7 +173,6 @@ li {
     text-decoration: underline;
 }
 
-/* --- DataHub additions: search + upload stats --- */
 .search-input{
     width: 220px;
     padding: 9px 12px;
@@ -192,7 +191,7 @@ li {
     margin: 8px 0 14px;
     font-size: 13px;
     color: #aaa;
-    min-height: 16px; /* чтобы не прыгала вёрстка */
+    min-height: 16px;
 }
 
 .subpath{
